@@ -3,8 +3,7 @@ import { Building, Key, Award, Search, CheckCircle2, ChevronRight, Phone, Send }
 import heroBanner from '../assets/hero_banner.png';
 import interiorImage from '../assets/interior_design.png';
 
-export default function Services() {
-  const [activeTab, setActiveTab] = useState('construction');
+export default function Services({ activeTab, setActiveTab }) {
   const [inquirySubmitted, setInquirySubmitted] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -96,7 +95,7 @@ export default function Services() {
   const CurrentIcon = currentService.icon;
 
   return (
-    <div className="pt-24 min-h-screen bg-slate-50">
+    <div className="pt-0 min-h-screen bg-slate-50">
       {/* 1. Page Header */}
       <section className="bg-slate-900 text-white py-12 relative overflow-hidden">
         <div className="absolute inset-0 z-0">

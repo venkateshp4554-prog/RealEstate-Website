@@ -1,20 +1,173 @@
 import React, { useState } from 'react';
-import { Phone, Mail, Award, Menu, X, ChevronDown } from 'lucide-react';
+import { Phone, Mail, Award, Menu, X, ChevronDown, Building, Key, Search, Paintbrush, MapPin, Users, Eye, ShieldCheck, Star } from 'lucide-react';
 
-export default function Navbar({ currentPage, setCurrentPage, setProjectFilter }) {
+export default function Navbar({ currentPage, setCurrentPage, setProjectFilter, setActiveServiceTab, setActiveBranchId }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isProjectsDropdownOpen, setIsProjectsDropdownOpen] = useState(false);
+  const [openDesktopDropdown, setOpenDesktopDropdown] = useState(null);
+  const [openMobileDropdown, setOpenMobileDropdown] = useState(null);
 
-  const handleNavClick = (pageId, filterType = '') => {
+  const handleNavClick = (pageId, extra = {}) => {
     setCurrentPage(pageId);
     setIsMobileMenuOpen(false);
-    setIsProjectsDropdownOpen(false);
+    setOpenDesktopDropdown(null);
+    setOpenMobileDropdown(null);
     
     if (pageId === 'projects' && setProjectFilter) {
-      setProjectFilter({ city: '', type: filterType });
+      setProjectFilter({ city: '', type: extra.filterType || '' });
+    }
+    if (pageId === 'services' && setActiveServiceTab && extra.serviceTab) {
+      setActiveServiceTab(extra.serviceTab);
+    }
+    if (pageId === 'contact' && setActiveBranchId && extra.branchId !== undefined) {
+      setActiveBranchId(extra.branchId);
     }
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const toggleMobileDropdown = (key) => {
+    setOpenMobileDropdown(prev => prev === key ? null : key);
+  };
+
+  // Dropdown menu definitions
+  const dropdowns = {
+    about: {
+      label: 'About Us',
+      pageId: 'about',
+      items: [
+        { label: 'Company Profile', icon: Building, onClick: () => handleNavClick('about') },
+        { label: 'Our Vision & Mission', icon: Eye, onClick: () => handleNavClick('about') },
+        { label: 'Why Choose Us', icon: ShieldCheck, onClick: () => handleNavClick('about') },
+        { label: 'Happy Customers', icon: Star, onClick: () => handleNavClick('about') },
+      ]
+    },
+    projects: {
+      label: 'Projects',
+      pageId: 'projects',
+      items: [
+        { label: 'Ongoing Projects', onClick: () => handleNavClick('projects', { filterType: 'Ongoing' }) },
+        { label: 'Future Projects', onClick: () => handleNavClick('projects', { filterType: 'Upcoming' }) },
+        { label: 'Completed Projects', onClick: () => handleNavClick('projects', { filterType: 'Completed' }) },
+      ]
+    },
+    services: {
+      label: 'Services',
+      pageId: 'services',
+      items: [
+        { label: 'Building & Construction', icon: Building, onClick: () => handleNavClick('services', { serviceTab: 'construction' }) },
+        { label: 'Home Loan Assistance', icon: Key, onClick: () => handleNavClick('services', { serviceTab: 'loans' }) },
+        { label: 'NexaInteriors', icon: Paintbrush, onClick: () => handleNavClick('services', { serviceTab: 'interiors' }) },
+        { label: 'Real Estate Advisory', icon: Search, onClick: () => handleNavClick('services', { serviceTab: 'consulting' }) },
+      ]
+    },
+    contact: {
+      label: 'Contact Us',
+      pageId: 'contact',
+      items: [
+        { label: 'Corporate Office (Vizag)', icon: MapPin, onClick: () => handleNavClick('contact', { branchId: 1 }) },
+        { label: 'Hyderabad Branch', icon: MapPin, onClick: () => handleNavClick('contact', { branchId: 2 }) },
+        { label: 'Bengaluru Branch', icon: MapPin, onClick: () => handleNavClick('contact', { branchId: 3 }) },
+      ]
+    }
+  };
+
+  // Reusable desktop dropdown renderer
+  const DesktopDropdown = ({ dropdownKey }) => {
+    const dd = dropdowns[dropdownKey];
+    const isActive = currentPage === dd.pageId;
+    const isOpen = openDesktopDropdown === dropdownKey;
+
+    return (
+      <div
+        className="relative h-full"
+        onMouseEnter={() => setOpenDesktopDropdown(dropdownKey)}
+        onMouseLeave={() => setOpenDesktopDropdown(null)}
+      >
+        <button
+          onClick={() => handleNavClick(dd.pageId)}
+          className={`px-5 h-full font-semibold text-sm flex items-center gap-1.5 transition-all ${
+            isActive
+              ? 'bg-white text-red-600'
+              : 'hover:bg-red-700 text-white'
+          }`}
+        >
+          <span>{dd.label}</span>
+          <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+
+        {/* Dropdown panel */}
+        <div className={`absolute top-14 left-0 w-56 bg-white border border-slate-100 shadow-2xl rounded-b-xl py-2 z-50 text-slate-800 text-left transition-all duration-200 origin-top ${
+          isOpen ? 'opacity-100 scale-y-100 pointer-events-auto' : 'opacity-0 scale-y-95 pointer-events-none'
+        }`}>
+          {/* Red accent line at top */}
+          <div className="absolute top-0 left-4 right-4 h-[2px] bg-gradient-to-r from-red-500 to-yellow-500 rounded-full"></div>
+          
+          {dd.items.map((item, idx) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={idx}
+                onClick={item.onClick}
+                className="w-full px-4 py-2.5 text-xs font-semibold hover:bg-red-50 hover:text-red-600 transition-colors text-left flex items-center gap-3 group"
+              >
+                {Icon && (
+                  <span className="bg-slate-100 group-hover:bg-red-100 text-slate-400 group-hover:text-red-500 p-1.5 rounded-lg transition-colors">
+                    <Icon className="h-3.5 w-3.5" />
+                  </span>
+                )}
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  // Reusable mobile dropdown/accordion renderer
+  const MobileDropdown = ({ dropdownKey }) => {
+    const dd = dropdowns[dropdownKey];
+    const isActive = currentPage === dd.pageId;
+    const isOpen = openMobileDropdown === dropdownKey;
+
+    return (
+      <div className={`rounded-xl overflow-hidden transition-all ${isOpen ? 'bg-red-800/40 border border-red-800' : ''}`}>
+        <button
+          onClick={() => toggleMobileDropdown(dropdownKey)}
+          className={`w-full py-3 px-4 rounded-xl font-semibold text-sm text-left flex justify-between items-center transition-all ${
+            isActive ? 'bg-white text-red-700' : 'hover:bg-red-800'
+          }`}
+        >
+          <span>{dd.label}</span>
+          <ChevronDown className={`h-4 w-4 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+        
+        {/* Collapsible sub-menu */}
+        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+          <div className="pl-4 pr-2 pb-2 pt-1 flex flex-col gap-0.5">
+            {dd.items.map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={idx}
+                  onClick={item.onClick}
+                  className="w-full text-left py-2.5 px-3 text-xs font-medium hover:text-yellow-300 hover:bg-red-800/50 rounded-lg transition-colors flex items-center gap-2.5"
+                >
+                  {Icon ? (
+                    <span className="bg-red-800/60 p-1 rounded-md">
+                      <Icon className="h-3 w-3 text-red-200" />
+                    </span>
+                  ) : (
+                    <span className="text-red-300 text-[10px]">•</span>
+                  )}
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -104,7 +257,7 @@ export default function Navbar({ currentPage, setCurrentPage, setProjectFilter }
             {/* Desktop Navigation Links */}
             <div className="hidden lg:flex items-center h-full">
               
-              {/* Home */}
+              {/* Home (no dropdown) */}
               <button 
                 onClick={() => handleNavClick('home')}
                 className={`px-5 h-full font-semibold text-sm transition-all ${
@@ -116,84 +269,17 @@ export default function Navbar({ currentPage, setCurrentPage, setProjectFilter }
                 Home
               </button>
 
-              {/* About Us */}
-              <button 
-                onClick={() => handleNavClick('about')}
-                className={`px-5 h-full font-semibold text-sm transition-all ${
-                  currentPage === 'about' 
-                    ? 'bg-white text-red-600' 
-                    : 'hover:bg-red-700 text-white'
-                }`}
-              >
-                About Us
-              </button>
+              {/* About Us with dropdown */}
+              <DesktopDropdown dropdownKey="about" />
 
-              {/* Projects with Dropdown */}
-              <div 
-                className="relative h-full"
-                onMouseEnter={() => setIsProjectsDropdownOpen(true)}
-                onMouseLeave={() => setIsProjectsDropdownOpen(false)}
-              >
-                <button 
-                  onClick={() => handleNavClick('projects')}
-                  className={`px-5 h-full font-semibold text-sm flex items-center gap-1 transition-all ${
-                    currentPage === 'projects' 
-                      ? 'bg-white text-red-600' 
-                      : 'hover:bg-red-700 text-white'
-                  }`}
-                >
-                  <span>Projects</span>
-                  <ChevronDown className="h-4 w-4 shrink-0" />
-                </button>
+              {/* Projects with dropdown */}
+              <DesktopDropdown dropdownKey="projects" />
 
-                {/* Dropdown panel */}
-                {isProjectsDropdownOpen && (
-                  <div className="absolute top-14 left-0 w-48 bg-white border border-slate-100 shadow-xl rounded-b-xl py-2 z-50 text-slate-800 text-left">
-                    <button 
-                      onClick={() => handleNavClick('projects', 'Ongoing')}
-                      className="w-full px-4 py-2.5 text-xs font-semibold hover:bg-slate-50 transition-colors text-left"
-                    >
-                      Ongoing Projects
-                    </button>
-                    <button 
-                      onClick={() => handleNavClick('projects', 'Upcoming')}
-                      className="w-full px-4 py-2.5 text-xs font-semibold hover:bg-slate-50 transition-colors text-left"
-                    >
-                      Future Projects
-                    </button>
-                    <button 
-                      onClick={() => handleNavClick('projects', 'Completed')}
-                      className="w-full px-4 py-2.5 text-xs font-semibold hover:bg-slate-50 transition-colors text-left"
-                    >
-                      Completed Projects
-                    </button>
-                  </div>
-                )}
-              </div>
+              {/* Services with dropdown */}
+              <DesktopDropdown dropdownKey="services" />
 
-              {/* Services */}
-              <button 
-                onClick={() => handleNavClick('services')}
-                className={`px-5 h-full font-semibold text-sm transition-all ${
-                  currentPage === 'services' 
-                    ? 'bg-white text-red-600' 
-                    : 'hover:bg-red-700 text-white'
-                }`}
-              >
-                Services
-              </button>
-
-              {/* Contact Us */}
-              <button 
-                onClick={() => handleNavClick('contact')}
-                className={`px-5 h-full font-semibold text-sm transition-all ${
-                  currentPage === 'contact' 
-                    ? 'bg-white text-red-600' 
-                    : 'hover:bg-red-700 text-white'
-                }`}
-              >
-                Contact Us
-              </button>
+              {/* Contact Us with dropdown */}
+              <DesktopDropdown dropdownKey="contact" />
 
             </div>
 
@@ -225,54 +311,26 @@ export default function Navbar({ currentPage, setCurrentPage, setProjectFilter }
 
       {/* 3. MOBILE MENU DRAWER */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-red-700 text-white text-left py-4 px-6 border-t border-red-800 shadow-inner flex flex-col gap-2">
+        <div className="lg:hidden bg-red-700 text-white text-left py-4 px-6 border-t border-red-800 shadow-inner flex flex-col gap-2 max-h-[calc(100vh-112px)] overflow-y-auto">
+          {/* Home */}
           <button 
             onClick={() => handleNavClick('home')}
             className={`w-full py-3 px-4 rounded-xl font-semibold text-sm ${currentPage === 'home' ? 'bg-white text-red-700' : 'hover:bg-red-800'}`}
           >
             Home
           </button>
-          <button 
-            onClick={() => handleNavClick('about')}
-            className={`w-full py-3 px-4 rounded-xl font-semibold text-sm ${currentPage === 'about' ? 'bg-white text-red-700' : 'hover:bg-red-800'}`}
-          >
-            About Us
-          </button>
-          
-          {/* Projects expander in mobile */}
-          <div className="border border-red-800 rounded-xl p-2 bg-red-800/30">
-            <button 
-              onClick={() => handleNavClick('projects')}
-              className="w-full py-2 px-4 rounded-lg font-semibold text-sm text-left flex justify-between items-center"
-            >
-              <span>Projects Catalog</span>
-              <ChevronDown className="h-4 w-4" />
-            </button>
-            <div className="pl-4 pt-1 flex flex-col gap-1 text-xs">
-              <button onClick={() => handleNavClick('projects', 'Ongoing')} className="w-full text-left py-2 hover:text-yellow-300">
-                • Ongoing Projects
-              </button>
-              <button onClick={() => handleNavClick('projects', 'Upcoming')} className="w-full text-left py-2 hover:text-yellow-300">
-                • Future Projects
-              </button>
-              <button onClick={() => handleNavClick('projects', 'Completed')} className="w-full text-left py-2 hover:text-yellow-300">
-                • Completed Projects
-              </button>
-            </div>
-          </div>
 
-          <button 
-            onClick={() => handleNavClick('services')}
-            className={`w-full py-3 px-4 rounded-xl font-semibold text-sm ${currentPage === 'services' ? 'bg-white text-red-700' : 'hover:bg-red-800'}`}
-          >
-            Services
-          </button>
-          <button 
-            onClick={() => handleNavClick('contact')}
-            className={`w-full py-3 px-4 rounded-xl font-semibold text-sm ${currentPage === 'contact' ? 'bg-white text-red-700' : 'hover:bg-red-800'}`}
-          >
-            Contact Us
-          </button>
+          {/* About Us accordion */}
+          <MobileDropdown dropdownKey="about" />
+
+          {/* Projects accordion */}
+          <MobileDropdown dropdownKey="projects" />
+
+          {/* Services accordion */}
+          <MobileDropdown dropdownKey="services" />
+
+          {/* Contact Us accordion */}
+          <MobileDropdown dropdownKey="contact" />
 
           <div className="mt-4 pt-4 border-t border-red-800 text-center flex flex-col gap-2">
             <span className="text-[10px] text-red-200">ISO 9001:2015 CERTIFIED BUILDER</span>

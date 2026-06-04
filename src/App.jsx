@@ -12,6 +12,8 @@ function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedProject, setSelectedProject] = useState(null);
   const [projectFilter, setProjectFilter] = useState({ city: '', type: '' });
+  const [activeServiceTab, setActiveServiceTab] = useState('construction');
+  const [activeBranchId, setActiveBranchId] = useState(null);
 
   // Handle opening project details modal
   const handleViewDetails = (project) => {
@@ -45,9 +47,9 @@ function App() {
           />
         );
       case 'services':
-        return <Services />;
+        return <Services activeTab={activeServiceTab} setActiveTab={setActiveServiceTab} />;
       case 'contact':
-        return <Contact />;
+        return <Contact activeBranchId={activeBranchId} setActiveBranchId={setActiveBranchId} />;
       default:
         return (
           <Home 
@@ -62,7 +64,13 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
       {/* Dynamic Navigation Bar */}
-      <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+      <Navbar 
+        currentPage={currentPage} 
+        setCurrentPage={setCurrentPage} 
+        setProjectFilter={setProjectFilter}
+        setActiveServiceTab={setActiveServiceTab}
+        setActiveBranchId={setActiveBranchId}
+      />
 
       {/* Main Page Area */}
       <main className="flex-grow pt-14 lg:pt-[120px]">

@@ -55,7 +55,7 @@ export default function About() {
       </section>
 
       {/* 2. STORY & ACCORDION (SCREENSHOT 1 DETAILS) */}
-      <section className="py-16 bg-white text-left select-none">
+      <section id="profile" className="py-16 bg-white text-left select-none">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             
@@ -81,7 +81,7 @@ export default function About() {
             </div>
 
             {/* Right Column: Accordion Section */}
-            <div className="space-y-4">
+            <div id="why-us" className="space-y-4">
               <h2 className="font-display font-extrabold text-2xl sm:text-3xl text-secondary-900 border-b-4 border-red-600 pb-2.5 w-fit">
                 Why you should choose us
               </h2>
@@ -118,7 +118,7 @@ export default function About() {
       </section>
 
       {/* 3. END TO END SERVICES & INFOGRAPHIC TIMELINE (SCREENSHOT 2 & 3 DETAILS) */}
-      <section className="py-16 bg-slate-50 border-y border-slate-100 select-none">
+      <section id="timeline" className="py-16 bg-slate-50 border-y border-slate-100 select-none">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-12">
           
           {/* Section Header */}
